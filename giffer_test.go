@@ -54,14 +54,17 @@ func TestGifferReturnsError(t *testing.T) {
 
 }
 
-func TestDecodeJPGError(t *testing.T) {
+func TestDecodeError(t *testing.T) {
 	// Make random bytes
 	d := []byte("This is not a jpeg image")
-	img, err := decodeJPG(d)
+	img, kind, err := decode(d)
 	if err == nil {
 		t.Fail()
 	}
 	if img != nil {
+		t.Fail()
+	}
+	if kind != "" {
 		t.Fail()
 	}
 }

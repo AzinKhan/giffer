@@ -4,19 +4,17 @@ import (
 	"bytes"
 	"image"
 	"image/gif"
-	"image/jpeg"
+	_ "image/jpeg"
+	_ "image/png"
 	"log"
 	"sync"
 )
 
-func decodeJPG(data []byte) (image.Image, error) {
-	log.Println("Decoding JPEG")
-	img, err := jpeg.Decode(bytes.NewReader(data))
-	return img, err
+func decode(data []byte) (image.Image, string, error) {
+	return image.Decode(bytes.NewReader(data))
 }
 
 func ConvertToGIF(img image.Image) (*image.Paletted, error) {
-	log.Println("Encoding to GIF")
 	var b []byte
 	bf := bytes.NewBuffer(b)
 	var opt gif.Options
@@ -33,17 +31,13 @@ func ConvertToGIF(img image.Image) (*image.Paletted, error) {
 var wg sync.WaitGroup
 
 func Convert(data []byte) (*image.Paletted, error) {
-	img, err := decodeJPG(data)
+	img, kind, err := decode(data)
 	if err != nil {
-		log.Printf("Error decoding JPEG: %+v", err)
+		log.Printf("Error decoding: %+v", err)
 		return nil, err
 	}
-	GIF, err := ConvertToGIF(img)
-	if err != nil {
-		log.Printf("Error converting to GIF: %+v", err)
-		return nil, err
-	}
-	return GIF, nil
+	log.Printf("Converting file type %s to GIF", kind)
+	return ConvertToGIF(img)
 
 }
 
@@ -76,7 +70,7 @@ func Giffer(inputData [][]byte) (*bytes.Buffer, error) {
 			return nil, err
 		}
 	}
-	log.Printf("Encoding %+v images into GIF", len(G.Image))
+	log.Printf("Combining %+v images into GIF", len(G.Image))
 	var buf []byte
 	Buf := bytes.NewBuffer(buf)
 	err := gif.EncodeAll(Buf, G)
