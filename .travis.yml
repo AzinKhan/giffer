@@ -2,6 +2,9 @@ language: go
 go:
   - "1.9.x"
 
+env:
+  - CODECOV_TOKEN="c4b8cc1b-bb40-48a2-9c72-577d207fbfd1"
+
 install:
   - go get -t ./...
 
