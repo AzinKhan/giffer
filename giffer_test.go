@@ -107,7 +107,7 @@ func TestConvertToGif(t *testing.T) {
 	m := MockImage{
 		Pix: "hello",
 	}
-	img, err := ConvertToGIF(m)
+	img, err := convertToGIF(m)
 	if err == nil {
 		log.Println("Nil error")
 		t.Fail()

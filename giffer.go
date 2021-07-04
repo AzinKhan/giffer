@@ -19,9 +19,9 @@ func decode(data []byte) (image.Image, string, error) {
 	return image.Decode(bytes.NewReader(data))
 }
 
-// ConvertToGIF takes an image.Image and converts it into a GIF,
+// convertToGIF takes an image.Image and converts it into a GIF,
 // returning an *image.Paletted.
-func ConvertToGIF(img image.Image) (*image.Paletted, error) {
+func convertToGIF(img image.Image) (*image.Paletted, error) {
 	var b []byte
 	bf := bytes.NewBuffer(b)
 	var opt gif.Options
@@ -35,16 +35,16 @@ func ConvertToGIF(img image.Image) (*image.Paletted, error) {
 	return im.(*image.Paletted), err
 }
 
-// Convert is a wrapper for ConvertToGIF, taking in a slice of bytes
+// convert is a wrapper for ConvertToGIF, taking in a slice of bytes
 // and returning a GIF encoded *image.Paletted.
-func Convert(data []byte) (*image.Paletted, error) {
+func convert(data []byte) (*image.Paletted, error) {
 	img, kind, err := decode(data)
 	if err != nil {
 		log.Printf("Error decoding: %+v", err)
 		return nil, err
 	}
 	log.Printf("Converting file type %s to GIF", kind)
-	return ConvertToGIF(img)
+	return convertToGIF(img)
 
 }
 
@@ -64,7 +64,7 @@ func Giffer(inputData [][]byte) (*bytes.Buffer, error) {
 		data := d
 		i := index
 		wg.Go(func() error {
-			GIF, err := Convert(data)
+			GIF, err := convert(data)
 			if err != nil {
 				return err
 			}
