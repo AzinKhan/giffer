@@ -11,7 +11,8 @@ import (
 	_ "image/jpeg" // Register JPEG decoder with image package
 	_ "image/png"
 	"log"
-	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 func decode(data []byte) (image.Image, string, error) {
@@ -33,8 +34,6 @@ func ConvertToGIF(img image.Image) (*image.Paletted, error) {
 	im, err := gif.Decode(bf)
 	return im.(*image.Paletted), err
 }
-
-var wg sync.WaitGroup
 
 // Convert is a wrapper for ConvertToGIF, taking in a slice of bytes
 // and returning a GIF encoded *image.Paletted.
@@ -60,30 +59,27 @@ func Giffer(inputData [][]byte) (*bytes.Buffer, error) {
 		Image:     make([]*image.Paletted, len(inputData)),
 	}
 	log.Println("Converting images to GIF")
-	errChan := make(chan error, len(inputData))
-	wg.Add(len(inputData))
+	var wg errgroup.Group
 	for index, d := range inputData {
 		data := d
 		i := index
-		go func() {
-			defer wg.Done()
+		wg.Go(func() error {
 			GIF, err := Convert(data)
-			errChan <- err
+			if err != nil {
+				return err
+			}
 			G.Delay[i] = 8
 			G.Image[i] = GIF
-		}()
+			return nil
+		})
 	}
-	wg.Wait()
-	// Don't forget to close the channel!
-	close(errChan)
-	for err := range errChan {
-		if err != nil {
-			return nil, err
-		}
+	err := wg.Wait()
+	if err != nil {
+		return nil, err
 	}
 	log.Printf("Combining %+v images into GIF", len(G.Image))
 	var buf []byte
 	Buf := bytes.NewBuffer(buf)
-	err := gif.EncodeAll(Buf, G)
+	err = gif.EncodeAll(Buf, G)
 	return Buf, err
 }
