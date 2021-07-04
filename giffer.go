@@ -15,10 +15,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func decode(data []byte) (image.Image, string, error) {
-	return image.Decode(bytes.NewReader(data))
-}
-
 // convertToGIF takes an image.Image and converts it into a GIF,
 // returning an *image.Paletted.
 func convertToGIF(img image.Image) (*image.Paletted, error) {
@@ -38,7 +34,7 @@ func convertToGIF(img image.Image) (*image.Paletted, error) {
 // convert is a wrapper for ConvertToGIF, taking in a slice of bytes
 // and returning a GIF encoded *image.Paletted.
 func convert(data []byte) (*image.Paletted, error) {
-	img, kind, err := decode(data)
+	img, kind, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		log.Printf("Error decoding: %+v", err)
 		return nil, err
